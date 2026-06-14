@@ -34,28 +34,43 @@ def chooseplr():
 	plrstrarr = df["player_name"].unique()
 	while  True:
 		plyr = input("Choose a Player: ")
-		if plyr in plrstrarr:
-			plrdata = df[df["player_name"] == plyr]
-			return plrdata
-		else:
-			print("Player not found. Try Again.")
-
+		plrdata = df[df["player_name"].str.contains(plyr, case=False, na=False)]
+		for data, typed_name in [(plrdata, plyr)]:
+			unique_plyr = data["player_name"].unique()
+			if len(unique_plyr) == 0:
+				print(f"Error: {plyr} not found. Try Again.")
+			elif len(unique_plyr) > 1:
+				print(f"Error: {plyr} matched multiple players: {unique_plyr.tolist()}. Be more speciffic.")
+			elif len(unique_plyr) == 1:
+				return plrdata
 def choose1plr():
 	plrstrarr = df["player_name"].unique()
 	while  True:
 		plyr = input("Choose 1st Player: ")
-		if plyr in plrstrarr:
-			plrdata = df[df["player_name"] == plyr]
-			return plrdata
-		else:
-			print("Player not found. Try Again.")
+		plrdata = df[df["player_name"].str.contains(plyr, case=False, na=False)]
+		for data, typed_name in [(plrdata, plyr)]:
+			unique_plyr = data["player_name"].unique()
+			if len(unique_plyr) == 0:
+				print(f"Error: {plyr} not found. Try Again.")
+			elif len(unique_plyr) > 1:
+				print(f"Error: {plyr} matched multiple players: {unique_plyr.tolist()}. Be more speciffic.")
+			elif len(unique_plyr) == 1:
+				return plrdata
 
 def choose2plr():
 	plrstrarr = df["player_name"].unique()
 	while  True:
 		plyr = input("Choose 2nd Player: ")
-		if plyr in plrstrarr:
-			plrdata = df[df["player_name"] == plyr]
-			return plrdata
-		else:
-			print("Player not found. Try Again.")
+		plrdata = df[df["player_name"].str.contains(plyr, case=False, na=False)]
+		for data, typed_name in [(plrdata, plyr)]:
+			unique_plyr = data["player_name"].unique()
+			if len(unique_plyr) == 0:
+				print(f"Error: {plyr} not found. Try Again.")
+			elif len(unique_plyr) > 1:
+				print(f"Error: {plyr} matched multiple players: {unique_plyr.tolist()}. Be more speciffic.")
+			elif len(unique_plyr) == 1:
+				return plrdata
+		
+def getdata(name):
+	plrdata = df[df["player_name"]==name]
+	return plrdata

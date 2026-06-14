@@ -5,22 +5,9 @@ import matplotlib.pyplot as plt
 
 df = pd.read_csv("plstats(1-35)2025-26.csv")
 
-
-def roles(plrdata):
+def rolescore(plrdata):
 	position = plrdata["position"].item()
 	if position == "D":
-		accurlb = plrdata["accurateLongBalls"].item()
-		accpasper = plrdata["accuratePassesPercentage"].item()
-		clrs = plrdata["clearances"].item()
-		aerialduelper = plrdata["aerialDuelsWonPercentage"].item()
-		groundduelper = plrdata["groundDuelsWonPercentage"].item()
-		clnshts = plrdata["cleanSheet"].item()
-		driblost = plrdata["dribbledPast"].item()
-		duelLost = plrdata["duelLost"].item()
-		intrcpt = plrdata["interceptions"].item()
-		tackleswonper = plrdata["tacklesWonPercentage"].item()
-		totduelsper = plrdata["totalDuelsWonPercentage"].item()
-
 		scores = {'Ball Playing Defender': None, 'Traditional Defender': None, 'Attacking Fullback': None, 'Defensive Fullback': None, 'Inverted Fullback': None}
 
 		scores['Ball Playing Defender'] = (
@@ -63,7 +50,7 @@ def roles(plrdata):
 			)
 
 		biggestScore = max(scores, key = scores.get)
-		print(plrdata["player_name"].item(),"has a profile of",biggestScore)
+		return scores
 
 	if position == "M":
 		scores = {'Ball Winning Midfielder': None, 'Deep Lying Playmaker': None, 'Anchor Man': None, 'Box to Box Midfielder': None, 'Playmaker': None, 'Hounddog Midfielder': None, 'Traditional Winger': None,'Inside Forward':None, 'Creative Winger':None}
@@ -137,7 +124,7 @@ def roles(plrdata):
 			fetch.percentile(plrdata,"M","passToAssist")*0.15
 			)
 		biggestScore = max(scores, key = scores.get)
-		print(plrdata["player_name"].item(),"has a profile of",biggestScore)
+		return scores
 	if position == "F":
 		scores = {'Poacher':None, 'Target Man':None, 'False 9':None, 'Inside Forward':None, 'Traditional Winger':None}		
 
@@ -177,7 +164,7 @@ def roles(plrdata):
 		)
 
 		biggestScore = max(scores, key = scores.get)
-		print(plrdata["player_name"].item(),"has a profile of",biggestScore)
+		return scores
 	if position == "G":
 		scores = {'Shot Stopper':None, 'Sweeper Keeper':None}
 
@@ -195,5 +182,205 @@ def roles(plrdata):
 
 
 		biggestScore = max(scores, key = scores.get)
-		print(plrdata["player_name"].item(),"has a profile of",biggestScore)
-		print()
+		return scores
+
+
+def roles(plrdata):
+	position = plrdata["position"].item()
+
+	cachepercentile={}
+
+	metrics_by_pos = {
+		"D": ["accurateLongBalls", "interceptions", "accurateFinalThirdPasses","totalDuelsWonPercentage", 
+		"aerialDuelsWonPercentage", "dribbledPast", "clearances", "outfielderBlocks", "tacklesWonPercentage", "accurateCrossesPercentage", "successfulDribbles", 
+		"keyPasses", "assists", "expectedAssists", "groundDuelsWonPercentage", "ballRecovery", "goals"],
+              
+        "M": ["tacklesWon", "ballRecovery", "accuratePassesPercentage", "interceptions", "groundDuelsWon", "keyPasses", "accurateLongBalls", "accurateFinalThirdPasses", "touches", "aerialDuelsWon", "groundDuelsWonPercentage", "totalShots", "assists", "successfulDribbles", "bigChancesCreated", "expectedAssists", "possessionWonAttThird", "totalDuelsWonPercentage", "accurateCrossesPercentage", "goals", "expectedGoals", "passToAssist"],
+              
+		"F": ["goals", "expectedGoals", "shotsOnTarget", "goalConversionPercentage", "headedGoals", "aerialDuelsWon", "keyPasses", "assists", "successfulDribbles", "touches", "totalShots", "accurateCrossesPercentage"],
+              
+		"G": ["goalsPrevented", "saves", "highClaims", "accuratePasses", "accurateLongBalls", "clearances", "touches"]
+    }
+
+	for metric in metrics_by_pos[position]:
+		try:
+			cachepercentile[metric] = fetch.percentile(plrdata, position, metric)
+		except Exception:
+			p[metric] = 0.0
+
+	if position == "D":
+		scores = {'Ball Playing Defender': None, 'Traditional Defender': None, 'Attacking Fullback': None, 'Defensive Fullback': None, 'Inverted Fullback': None}
+
+		scores['Ball Playing Defender'] = (
+			cachepercentile["accurateLongBalls"]*0.3 +
+			cachepercentile["interceptions"]*0.05+
+			cachepercentile["accurateFinalThirdPasses"]*0.2+
+			cachepercentile["totalDuelsWonPercentage"]*0.05+
+			cachepercentile["aerialDuelsWonPercentage"]*0.2+
+			cachepercentile["dribbledPast"]*0.2
+			)
+		scores['Traditional Defender'] = (
+			cachepercentile["clearances"]*0.2 +
+			cachepercentile["aerialDuelsWonPercentage"]*0.3 +
+			cachepercentile["interceptions"]*0.05+
+			cachepercentile["outfielderBlocks"]*0.10+
+			cachepercentile["tacklesWonPercentage"]*0.20+
+			cachepercentile["dribbledPast"]*0.15
+			)
+		scores['Attacking Fullback'] = (
+			cachepercentile["accurateCrossesPercentage"]*0.25 +
+			cachepercentile["successfulDribbles"]*0.25 +
+			cachepercentile["keyPasses"]*0.10+
+			cachepercentile["assists"]*0.20+
+			cachepercentile["expectedAssists"]*0.2
+			)
+		scores['Defensive Fullback'] = (
+			cachepercentile["tacklesWonPercentage"]*0.30 +
+			cachepercentile["interceptions"]*0.25 +
+			cachepercentile["groundDuelsWonPercentage"]*0.20+
+			cachepercentile["ballRecovery"]*0.25
+			)
+		scores['Inverted Fullback'] = (
+			cachepercentile["keyPasses"]*0.1 +
+			cachepercentile["interceptions"]*0.1+
+			cachepercentile["accurateCrossesPercentage"]*0.2+
+			cachepercentile["ballRecovery"]*0.15+
+			cachepercentile["goals"]*0.15+
+			cachepercentile["successfulDribbles"]*0.15-
+			cachepercentile["aerialDuelsWonPercentage"]*0.15
+			)
+
+		biggestScore = max(scores, key = scores.get)
+		return biggestScore
+
+	if position == "M":
+		scores = {'Ball Winning Midfielder': None, 'Deep Lying Playmaker': None, 'Anchor Man': None, 'Box to Box Midfielder': None, 'Playmaker': None, 'Hounddog Midfielder': None, 'Traditional Winger': None,'Inside Forward':None, 'Creative Winger':None}
+
+		scores['Ball Winning Midfielder'] = (
+			cachepercentile["tacklesWon"]*0.35 +
+			cachepercentile["ballRecovery"]*0.1+
+			cachepercentile["accuratePassesPercentage"]*0.05 +
+			cachepercentile["interceptions"]*0.30+
+			cachepercentile["groundDuelsWon"]*0.20
+			)
+		scores['Deep Lying Playmaker'] = (
+			cachepercentile["keyPasses"]*0.2 +
+			cachepercentile["accuratePassesPercentage"]*0.15 +
+			cachepercentile["accurateLongBalls"]*0.15+
+			cachepercentile["accurateFinalThirdPasses"]*0.15+
+			cachepercentile["touches"]*0.10+
+			cachepercentile["interceptions"]*0.05
+			)
+		scores['Anchor Man'] = (
+			cachepercentile["accuratePassesPercentage"]*0.20 +
+			cachepercentile["tacklesWon"]*0.15 +
+			cachepercentile["ballRecovery"]*0.30+
+			cachepercentile["interceptions"]*0.30+
+			cachepercentile["aerialDuelsWon"]*0.05
+			)
+		scores['Box to Box Midfielder'] = (
+			cachepercentile["tacklesWon"]*0.2 +
+			cachepercentile["groundDuelsWonPercentage"]*0.20+
+			cachepercentile["totalShots"]*0.15+
+			cachepercentile["assists"]*0.10 +
+			cachepercentile["accurateFinalThirdPasses"]*0.15+
+			cachepercentile["keyPasses"]*0.05+
+			cachepercentile["ballRecovery"]*0.10+
+			cachepercentile["successfulDribbles"]*0.15
+			)
+		scores['Playmaker'] = (
+			cachepercentile["keyPasses"]*0.3 +
+			cachepercentile["bigChancesCreated"]*0.25+
+			cachepercentile["assists"]*0.10+
+			cachepercentile["successfulDribbles"]*0.15+
+			cachepercentile["expectedAssists"]*0.20
+			)
+		scores['Hounddog Midfielder'] = (
+			cachepercentile["possessionWonAttThird"]*0.25 +
+			cachepercentile["groundDuelsWonPercentage"]*0.20+
+			cachepercentile["totalDuelsWonPercentage"]*0.15+
+			cachepercentile["interceptions"]*0.20+
+			cachepercentile["ballRecovery"]*0.15
+			)
+		scores['Traditional Winger'] = (
+			cachepercentile["successfulDribbles"]*0.35 +
+			cachepercentile["accurateCrossesPercentage"]*0.25+
+			cachepercentile["assists"]*0.20+
+			cachepercentile["keyPasses"]*0.10+
+			cachepercentile["totalShots"]*0.1
+			)
+		scores['Inside Forward'] = (
+			cachepercentile["goals"]*0.35+
+			cachepercentile["expectedGoals"]*0.25+
+			cachepercentile["totalShots"]*0.20+
+			cachepercentile["successfulDribbles"]*0.15
+			)
+		scores['Creative Winger'] = (
+			cachepercentile["keyPasses"]*0.25+
+			cachepercentile["bigChancesCreated"]*0.1+
+			cachepercentile["assists"]*0.05+
+			cachepercentile["expectedAssists"]*0.15+
+			cachepercentile["successfulDribbles"]*0.20+
+			cachepercentile["totalShots"]*0.1+
+			cachepercentile["passToAssist"]*0.15
+			)
+		biggestScore = max(scores, key = scores.get)
+		return biggestScore
+	if position == "F":
+		scores = {'Poacher':None, 'Target Man':None, 'False 9':None, 'Inside Forward':None, 'Traditional Winger':None}		
+
+		scores['Poacher'] = (
+			cachepercentile["goals"]*0.4+
+			cachepercentile["expectedGoals"]*0.30+
+			cachepercentile["shotsOnTarget"]*0.20+
+			cachepercentile["goalConversionPercentage"]*0.10
+		)
+		scores['Target Man'] = (
+			cachepercentile["goals"]*0.25+
+			cachepercentile["headedGoals"]*0.3+
+			cachepercentile["aerialDuelsWon"]*0.35+
+			cachepercentile["goalConversionPercentage"]*0.10
+		)
+		scores['False 9'] = (
+			cachepercentile["keyPasses"]*0.20+
+			cachepercentile["assists"]*0.15+
+			cachepercentile["successfulDribbles"]*0.15+
+			cachepercentile["touches"]*0.10+
+			cachepercentile["goals"]*0.2+
+			cachepercentile["expectedGoals"]*0.2
+		)
+		scores['Inside Forward'] = (
+			cachepercentile["goals"]*0.15+
+			cachepercentile["expectedGoals"]*0.25+
+			cachepercentile["totalShots"]*0.10+
+			cachepercentile["successfulDribbles"]*0.25+
+			cachepercentile["keyPasses"]*.1
+		)
+		scores['Traditional Winger'] = (
+			cachepercentile["successfulDribbles"]*0.35 +
+			cachepercentile["accurateCrossesPercentage"]*0.25+
+			cachepercentile["assists"]*0.20+
+			cachepercentile["keyPasses"]*0.10+
+			cachepercentile["totalShots"]*0.1
+		)
+
+		biggestScore = max(scores, key = scores.get)
+		return biggestScore
+	if position == "G":
+		scores = {'Shot Stopper':None, 'Sweeper Keeper':None}
+
+		scores['Shot Stopper'] = (
+			cachepercentile["goalsPrevented"]*0.35+
+			cachepercentile["saves"]*0.45+
+			cachepercentile["highClaims"]*0.2
+		)
+		scores['Sweeper Keeper'] = (
+			cachepercentile["accuratePasses"]*0.25+
+			cachepercentile["accurateLongBalls"]*0.30+
+			cachepercentile["clearances"]*0.30+
+			cachepercentile["touches"]*0.15
+		)
+
+
+		biggestScore = max(scores, key = scores.get)
+		return biggestScore

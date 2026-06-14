@@ -118,3 +118,24 @@ def spidergraph(plrdata1, plrdata2, statlist):
 	ax.set_ylim(0,100)
 
 	plt.show()
+
+
+def leaguebenchmark(plrdata, stat1):
+	plrstrarr = df["player_name"].unique()
+	plr_pos = plrdata["position"].item()
+	positiongrp = df[df["position"]==plr_pos]
+
+	mean = positiongrp[stat1].mean()
+
+	plr1 = fetch.name(plrdata)
+	p1stat1 = plrdata[stat1].item()
+
+	fig, ax = plt.subplots(figsize=(6, 5))
+	bars = ax.bar([plr1, "League Average"], [p1stat1, mean], color=['#1f77b4', '#ff7f0e'])
+    
+	ax.bar_label(bars, fmt='%.2f', padding=3)
+    
+	ax.set_title(f"{plr1} {stat1} vs Position Average")
+    
+	plt.tight_layout()
+	plt.show()
